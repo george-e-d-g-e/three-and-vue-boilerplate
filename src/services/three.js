@@ -87,14 +87,15 @@ const Three = () => {
         const actions = {}
         animations.forEach( clip => {
           actions[clip.name] = mixer.clipAction(clip)
+          
+          // uncomment to log names
+          // console.log(clip.name)
         })
-
-        console.log(actions)
+        
         // play specific clips
         actions['LegsRotate_Y_axis_360_AnimClip'].play()
         actions['Jump_AnimClip'].play()
         
-
       })
 
       light = new AmbientLight(0xffffff, 1.0)
