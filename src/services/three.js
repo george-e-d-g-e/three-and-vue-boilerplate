@@ -10,7 +10,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import  gltfPath from '../assets/models/gltf/rubber-dingy/RubberDingy_animClips_V12.gltf'
+import gltfPath from '../assets/models/gltf/rubber-dingy/RubberDingy_animClips_V15.gltf'
 
 const Three = () => {
 
@@ -26,56 +26,59 @@ const Three = () => {
     })
     renderer.render(scene, camera)
   }
-  
+
   return {
 
     innit(canvas) {
-      
+
       camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 100)
       camera.position.z = 15
       camera.position.y = 5
 
       scene = new Scene()
-      
-      renderer = new WebGLRenderer( { antialias: true, canvas: canvas })
+
+      renderer = new WebGLRenderer({ antialias: true, canvas: canvas })
       renderer.setPixelRatio(window.devicePixelRatio)
       renderer.setSize(window.innerWidth, window.innerHeight)
       renderer.setClearColor(0x282828, 1)
 
       clock = new Clock()
       delta = clock.getDelta()
-      
+
       cameraControls = new OrbitControls(camera, renderer.domElement)
       cameraControls.enableDamping = true
       cameraControls.dampingFactor = 0.25
       cameraControls.enableZoom = true
 
       // skeletons 
-      
+
 
       // load GLTF
       loader = new GLTFLoader()
-      loader.load(gltfPath, (gltf) =>{
-        
+      loader.load(gltfPath, (gltf) => {
+
         const model = gltf.scene
         const animations = gltf.animations
 
         // resize
-        const size = 0.05   
+        const size = 0.05
         model.scale.set(size, size, size)
 
         // model.updateMatrixWorld()
 
-        model.traverse( object => {
+        model.traverse(object => {
           if (object.name === 'Skeleton_RIG_GRP') {
             // TODO: skeleton not showing and cant work out why
-            let helper = new SkeletonHelper( object )
-            scene.add( helper )
+            let helper = new SkeletonHelper(object)
+            scene.add(helper)
           }
         })
-        
+
         // add to scene
         scene.add(model)
+
+        let helper = new SkeletonHelper(model)
+        scene.add(helper)
 
         // setup animationsMixer
         mixer = new AnimationMixer(model)
@@ -85,17 +88,17 @@ const Three = () => {
 
         // add animations to mixer and actions object
         const actions = {}
-        animations.forEach( clip => {
+        animations.forEach(clip => {
           actions[clip.name] = mixer.clipAction(clip)
-          
+
           // uncomment to log names
-          // console.log(clip.name)
+          console.log(clip.name)
         })
-        
+
         // play specific clips
-        actions['LegsRotate_Y_axis_360_AnimClip'].play()
-        actions['Jump_AnimClip'].play()
-        
+        actions['Run_Medium_AnimClip'].play()
+        actions['ArmsRotate_Y_axis_360_AnimClip'].play()
+
       })
 
       light = new AmbientLight(0xffffff, 1.0)
@@ -105,7 +108,7 @@ const Three = () => {
       light.position.set(0.75, 1, 0)
       scene.add(light)
 
-      window.addEventListener( 'resize', this.onResize, false)
+      window.addEventListener('resize', this.onResize, false)
 
       // Render
       this.render()
@@ -113,7 +116,7 @@ const Three = () => {
 
     render,
 
-    addRenderFunction( callback ){
+    addRenderFunction(callback) {
       renderFunctions.push(callback)
     },
 
