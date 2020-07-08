@@ -7,14 +7,15 @@ import {
   DirectionalLight,
   AnimationMixer,
   SkeletonHelper,
+  Group,
 } from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import gltfPath from '../assets/models/gltf/rubber-dingy/RubberDingy_animClips_V15.gltf'
 
 const Three = () => {
 
-  let camera, scene, renderer, clock, delta, loader, cameraControls, light
+  let camera, scene, renderer, clock, delta, loader, light, markerGroup
   let mixer
   const renderFunctions = []
 
@@ -37,21 +38,21 @@ const Three = () => {
 
       scene = new Scene()
 
-      renderer = new WebGLRenderer({ antialias: true, canvas: canvas })
+      renderer = new WebGLRenderer({ antialias: true, alpha: true, canvas: canvas })
       renderer.setPixelRatio(window.devicePixelRatio)
       renderer.setSize(window.innerWidth, window.innerHeight)
-      renderer.setClearColor(0x282828, 1)
+      renderer.setClearColor(0x282828, 0.2)
 
       clock = new Clock()
       delta = clock.getDelta()
 
-      cameraControls = new OrbitControls(camera, renderer.domElement)
-      cameraControls.enableDamping = true
-      cameraControls.dampingFactor = 0.25
-      cameraControls.enableZoom = true
+      // cameraControls = new OrbitControls(camera, renderer.domElement)
+      // cameraControls.enableDamping = true
+      // cameraControls.dampingFactor = 0.25
+      // cameraControls.enableZoom = true
 
-      // skeletons 
-
+      markerGroup = new Group()
+      scene.add(markerGroup)
 
       // load GLTF
       loader = new GLTFLoader()
@@ -75,7 +76,7 @@ const Three = () => {
         })
 
         // add to scene
-        scene.add(model)
+        markerGroup.add(model)
 
         let helper = new SkeletonHelper(model)
         scene.add(helper)
@@ -124,6 +125,18 @@ const Three = () => {
       camera.aspect = window.innerWidth / window.innerHeight
       camera.updateProjectionMatrix()
       renderer.setSize(window.innerWidth, window.innerHeight)
+    },
+
+    getCamera(){
+      return camera
+    },
+
+    getRenderer(){
+      return renderer
+    },
+
+    getMarkerGroup(){
+      return markerGroup
     }
 
   }

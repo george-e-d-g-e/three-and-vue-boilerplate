@@ -10,8 +10,8 @@ import Three from './components/three.vue'
 export default {
   name: 'App',
   components: {
-    Three
-  }
+    Three,
+  },
 }
 </script>
 

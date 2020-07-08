@@ -11,7 +11,8 @@
     "@vxna/gltf-loader": "^2.0.1",
     "core-js": "^3.6.5",
     "three": "^0.117.1",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-plugin-load-script": "^1.2.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.4.0",

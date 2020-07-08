@@ -1,7 +1,11 @@
 /* eslint-disable */
 
+
 module.exports = {
   configureWebpack: {
+    devServer: {
+      https: true
+    },
     module: {
       rules: [
         {
@@ -15,7 +19,7 @@ module.exports = {
           ]
         },
         {
-          test: /\.(bin|jpe?g|png)$/,
+          test: /\.(bin|dat|hiro)$/,
           loader: 'file-loader',
           options: { esModule: false }
         }
