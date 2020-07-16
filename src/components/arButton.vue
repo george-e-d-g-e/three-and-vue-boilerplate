@@ -1,5 +1,5 @@
 <template>
-  <a href="#" id="ar-button" @click="loadARjs()">AR mode</a>
+  <a href="#" id="ar-button" @click="loadARjs()"> {{label}} </a>
 </template>
 
 <script>
@@ -7,15 +7,22 @@ import * as THREE from 'three'
 
 export default {
   name: "ARButton",
+  data: function() {
+    return {
+      label: 'AR mode'
+    }
+  },
   methods: {
     loadARjs(){
-      console.log("HELLO")
+
+      this.label = 'Loading'
+
       // Make THREE global
       window.THREE = THREE
       // load AR.js
       this.$loadScript('https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar.js')
       .then( ()=> {
-        console.log("ARjs Loaded")
+        this.label = 'Look for marker'
         this.$emit('ARjsLoaded')
       })        
       .catch( error => {

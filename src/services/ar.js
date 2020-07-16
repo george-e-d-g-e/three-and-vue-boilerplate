@@ -7,74 +7,79 @@ const AR = (camera, renderer) => {
 
   THREEx.ArToolkitContext.baseURL = '../'
 
-  console.log(hiroPattURL)
-
-  console.log(cameraParaURL)
-
-  console.log("source")
+  // reset camera position
+  camera.position.set( 0, 0, 0)
 
   const arToolkitSource = new THREEx.ArToolkitSource({
     sourceType: 'webcam',
+    sourceWidth: 480,
+    sourceHeight: 640,
+    displayWidth: window.innerWidth,
+    displayHeight: window.innerHeight,
   })
-
-  console.log("context")
 
   const arToolkitContext = new THREEx.ArToolkitContext({
     cameraParametersUrl: cameraParaURL,
     detectionMode: 'mono',
-    debug: true,
+    // debug: true
   })
-  
-  // const markerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-  //   type: 'pattern',
-  //   patternUrl: hiroPattURL,
-  //   changeMatrixMode: 'cameraTransformMatrix',
-  // })
-  
-
-  const onResize = () => {
-    console.log("resize")
-    arToolkitSource.onResizeElement()
-    arToolkitSource.copyElementSizeTo(renderer.domElement)
-		if( arToolkitContext.arController !== null ){
-			arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
-		}
-  }
 
   return {
     innit(){
       
       arToolkitSource.init( () => { 
-          onResize() 
+          this.onResize() 
+          setTimeout( () => {
+            this.onResize() 
+          }, 500)
       })
       
       arToolkitContext.init( function onComplete(){
         camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() )
-        // camera.updateProjectionMatrix()
       })
 
-      window.addEventListener('resize', () => onResize(), false)
-      let log = info => () => { console.log(info)} 
+      window.addEventListener('resize', () => this.onResize())
+      let log = info => () => { console.log(info) } 
       window.addEventListener('arjs-video-loaded', log("video loaded"))
-      window.addEventListener('camera-error', log("camera error"))
-      window.addEventListener('camera-init', log("camera init"))
-      window.addEventListener('markerFound', log("marker Found"))
-      window.addEventListener('markerLost', log("marker Lost"))
+      window.addEventListener('camera-error', log)
+      window.addEventListener('camera-init', log)
+      window.addEventListener('markerFound', log)
+      window.addEventListener('markerLost', log)
 
       return arToolkitContext
     },
+
     renderFunction: () => {
       if( arToolkitSource.ready === false) return
       arToolkitContext.update( arToolkitSource.domElement )
-      camera.updateProjectionMatrix()
     },
 
     getMarker: (arToolkitContext, markerRoot) => {
+      
+      // resize model
+      console.log(markerRoot)
+      let scale = 0.05
+      markerRoot.scale.set(scale, scale, scale)
+
       return new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
         type: "pattern",
         patternUrl: hiroPattURL
       })
     },
+
+    onResize: () => {
+      console.log("resize")
+      arToolkitSource.onResizeElement() 		
+      arToolkitSource.copyElementSizeTo(renderer.domElement)
+
+      //arToolkitSource.onResize(arToolkitContext, renderer, camera)
+      //arToolkitSource.copySizeTo(renderer.domElement)
+      
+      if( arToolkitContext.arController !== null ){
+        arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
+      }
+    },
+
     log(){
       console.log(arToolkitSource)
       console.log(arToolkitContext)

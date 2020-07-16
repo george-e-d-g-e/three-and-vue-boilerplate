@@ -16,7 +16,7 @@ const three = Three()
 export default {
   name: 'Three',
   components: {
-    arButton
+    arButton 
   },
   mounted(){
     const canvas = document.getElementById('three-container')
@@ -24,14 +24,20 @@ export default {
   },
   methods: {
     onArjsLoaded(){
+
+      // remove camera contorls and resize
+      window.removeEventListener('resize', three.onResize, false)
+      three.toggleCameraControls()
+      
       const ar = AR(three.getCamera(), three.getRenderer())
-      console.log("AR setup")
+      
       const arToolkitContext = ar.innit()
       three.addRenderFunction(ar.renderFunction)
-      console.log("AR innit")
+      
       const marker = ar.getMarker(arToolkitContext, three.getMarkerGroup())
       marker.addEventListener('markerFound', ()=>{
-        console.log("marker found")
+        //TODO: indicater marker found
+        // console.log("marker found")
       })
     }
   }
