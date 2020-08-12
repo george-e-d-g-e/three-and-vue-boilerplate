@@ -34,11 +34,8 @@ export default {
       const arToolkitContext = ar.innit()
       three.addRenderFunction(ar.renderFunction)
       
-      const marker = ar.getMarker(arToolkitContext, three.getMarkerGroup())
-      marker.addEventListener('markerFound', ()=>{
-        //TODO: indicater marker found
-        // console.log("marker found")
-      })
+      const marker = ar.getFlameMarkers(arToolkitContext, three.getCamera())
+      console.log(marker)
     }
   }
 }

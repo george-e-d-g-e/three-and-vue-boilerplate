@@ -1,14 +1,12 @@
 /* global THREEx */
 
 import cameraParaURL from '../data/camera_para.dat'
-import hiroPattURL from '../data/patt.hiro'
+import hiroPattURL from '../data/hiro.patt'
+import flameMarkers from '../services/flameMarkers'
 
 const AR = (camera, renderer) => {
 
   THREEx.ArToolkitContext.baseURL = '../'
-
-  // reset camera position
-  camera.position.set( 0, 0, 0)
 
   const arToolkitSource = new THREEx.ArToolkitSource({
     sourceType: 'webcam',
@@ -21,7 +19,7 @@ const AR = (camera, renderer) => {
   const arToolkitContext = new THREEx.ArToolkitContext({
     cameraParametersUrl: cameraParaURL,
     detectionMode: 'mono',
-    // debug: true
+    debug: true
   })
 
   return {
@@ -38,13 +36,16 @@ const AR = (camera, renderer) => {
         camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() )
       })
 
+      
+
       window.addEventListener('resize', () => this.onResize())
-      let log = info => () => { console.log(info) } 
-      window.addEventListener('arjs-video-loaded', log("video loaded"))
-      window.addEventListener('camera-error', log)
-      window.addEventListener('camera-init', log)
-      window.addEventListener('markerFound', log)
-      window.addEventListener('markerLost', log)
+      
+      // let log = info => () => { console.log(info) } 
+      // window.addEventListener('arjs-video-loaded', log("video loaded"))
+      // window.addEventListener('camera-error', log)
+      // window.addEventListener('camera-init', log)
+      // window.addEventListener('markerFound', log)
+      // window.addEventListener('markerLost', log)
 
       return arToolkitContext
     },
@@ -54,26 +55,45 @@ const AR = (camera, renderer) => {
       arToolkitContext.update( arToolkitSource.domElement )
     },
 
-    getMarker: (arToolkitContext, markerRoot) => {
+    getMarker: (arToolkitContext, camera) => {
       
-      // resize model
-      console.log(markerRoot)
-      let scale = 0.05
-      markerRoot.scale.set(scale, scale, scale)
-
-      return new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+      const marker = new THREEx.ArMarkerControls(arToolkitContext, camera, {
         type: "pattern",
-        patternUrl: hiroPattURL
+        patternUrl: hiroPattURL,
+        changeMatrixMode: 'cameraTransformMatrix'
       })
+
+      marker.addEventListener('markerFound', () => {
+        camera.updateMatrix()
+      })
+      
+      return marker
+    },
+
+    getFlameMarkers: (arToolkitContext, camera) => {
+      const markers = []
+      Object.keys(flameMarkers).forEach( patt => {
+        const marker = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+          type: "pattern",
+          patternUrl: flameMarkers[patt],
+          changeMatrixMode: 'cameraTransformMatrix'
+        })
+  
+        marker.addEventListener('markerFound', () => {
+          console.log(`marker: ${patt}`)
+          camera.updateMatrix()
+        })
+
+        markers.push(marker)
+      })
+
+      return markers
     },
 
     onResize: () => {
       console.log("resize")
       arToolkitSource.onResizeElement() 		
       arToolkitSource.copyElementSizeTo(renderer.domElement)
-
-      //arToolkitSource.onResize(arToolkitContext, renderer, camera)
-      //arToolkitSource.copySizeTo(renderer.domElement)
       
       if( arToolkitContext.arController !== null ){
         arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)

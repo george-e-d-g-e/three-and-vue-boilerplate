@@ -19,7 +19,7 @@ module.exports = {
           ]
         },
         {
-          test: /\.(bin|dat|hiro)$/,
+          test: /\.(bin|dat|patt)$/,
           loader: 'file-loader',
           options: { esModule: false }
         }

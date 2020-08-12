@@ -9,7 +9,7 @@ export default {
   name: "ARButton",
   data: function() {
     return {
-      label: 'AR mode'
+      label: 'AR'
     }
   },
   methods: {
@@ -39,11 +39,13 @@ export default {
 <style>
   #ar-button{
     position: fixed;
-    top: 0;
-    right: 0;
-    padding: 0.5rem;
-    color: rgb(10,10,10);
-    opacity: 0.5;
+    bottom: 1em;
+    right: 1em;
+    color: rgb(250,250,250);
+    font-weight: 900;
+    text-decoration: none;
     padding: 1em;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2em;
   }
 </style>
