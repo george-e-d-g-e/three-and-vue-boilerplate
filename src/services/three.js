@@ -7,7 +7,6 @@ import {
   DirectionalLight,
   AnimationMixer,
   SkeletonHelper,
-  Group,
   AnimationUtils,
   PlaneGeometry,
   MeshBasicMaterial,
@@ -16,16 +15,17 @@ import {
   Vector2,
   SphereGeometry,
   Color,
+  Vector3,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import gltfPath from '../assets/models/gltf/rubber-dingy/RubberDingy_animClips_V15.gltf'
+import gltfPath from '../assets/models/gltf/rubber-dingy/RubberDingy_animClips_V34.gltf'
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module'
 
 
 const Three = () => {
 
-  let camera, scene, renderer, clock, delta, loader, light, markerGroup
+  let camera, scene, renderer, clock, delta, loader, light
   let mixer
   let raycaster, mouse
   let cameraControls
@@ -68,9 +68,8 @@ const Three = () => {
       cameraControls.enableDamping = true
       cameraControls.dampingFactor = 0.25
       cameraControls.enableZoom = true
-
-      markerGroup = new Group()
-      scene.add(markerGroup)
+      cameraControls.target = new Vector3(0,5,0)
+      cameraControls.update()
 
       // load GLTF
       loader = new GLTFLoader()
@@ -94,7 +93,7 @@ const Three = () => {
         })
 
         // add to scene
-        markerGroup.add(model)
+        scene.add(model)
 
         let helper = new SkeletonHelper(model)
         scene.add(helper)
@@ -109,18 +108,86 @@ const Three = () => {
         const actions = {}
         animations.forEach(clip => {
 
-          // Make clips to additive
-          AnimationUtils.makeClipAdditive( clip )
+          const cutClip = AnimationUtils.subclip( clip, clip.name, 1, 41, 24);
 
-          actions[clip.name] = mixer.clipAction(clip)
+          actions[clip.name] = mixer.clipAction(cutClip)
 
           // uncomment to log names
-          console.log(clip.name)
+          // console.log(clip.name)
+        })
+
+        // ref clip
+        const referenceClip = animations[0]
+        
+        console.log(referenceClip)
+        console.log(animations[12])
+
+        // const referenceFrame = 0
+
+        const additiveActions = {}
+        animations.forEach(clip => {
+          
+          // Make clips to additive
+          let targetClip = clip.clone()
+          // 
+          // // const additiveClip = AnimationUtils.makeClipAdditive( targetClip)
+          // if( (targetClip.name === 'reference') || 
+          // (targetClip.name === 'Legs_StrideLength_AnimClip') ){
+            // const querys = [
+            //   // "face_anim_Group_att.position",
+            //   // "face_anim_Group_att.quaternion",
+            //   //  "spikes_geo_GRP.position",
+            //   // "centre_spike.position",
+            //   "Hips.position",
+            //   "uprLegL.quaternion",
+            //   "lwrLegL.quaternion",
+            //   "uprLegR.quaternion",
+            //   "lwrLegR.quaternion",
+            //   "Neck.position",
+            //   "Neck.quaternion",
+            //   "Spine.position",
+            //   // "Spine.quaternion",
+            //   "Spine1.position",Legs_StrideLength_AnimClip
+            //   // "lwrArmR_jnt.quaternion",
+            //   // "lwrArmR_jnt_02.quaternion",
+            //   // "wristR_jnt.quaternion",
+            // ]
+            // const queryHandler = trackName => {
+            //   let check = false
+              
+            //   querys.forEach( query => {
+            //     if (query === trackName) 
+            //       check = true
+            //   })
+
+            //   return check
+            // }
+
+            // targetClip.tracks = targetClip.tracks.filter(track => queryHandler(track.name))
+            // console.log(targetClip)
+
+            // const additiveClip = AnimationUtils.makeClipAdditive( targetClip, referenceFrame, referenceClip, 30)
+            let additiveClip = AnimationUtils.makeClipAdditive( targetClip)
+            additiveClip = AnimationUtils.subclip( additiveClip, additiveClip.name, 1, 41, 24);
+            additiveActions[additiveClip.name] = mixer.clipAction(additiveClip)
+          // }
+
+          // uncomment to log names
+           console.log(clip.name)
         })
 
         // play specific clips
-        actions['Jump_AnimClip'].play()
-        actions['Legs_CrossOver_AnimClip'].play()
+        // actions['Breathe_AnimClip'].play()
+        // 
+        // 
+        actions['WaveArmsUp_animClip'].play()
+        additiveActions['Legs_Slide_Sideways_AnimClip'].play()
+        additiveActions['Legs_Tapping_AnimClip'].play()
+        additiveActions['Body_All_SideToSide_animClip'].play()
+        additiveActions['Jive_Arm_moves_animClip'].play()
+        // additiveActions['ChestPump_SideToSide_animClip'].play()
+        
+        // keepers 4,5,6,7,8 
 
       })
 
@@ -133,40 +200,33 @@ const Three = () => {
 
 
       // Floor 
-      let geometry = new PlaneGeometry(5, 5)
+      let geometry = new PlaneGeometry(100, 100)
       let material = new MeshBasicMaterial({
-        color: 0xff0000,
+        color: 0x000000,
         transparent: true,
-        opacity: 1.0,
+        opacity: 0.1,
         visible: true
       })
       let floor = new Mesh(geometry, material)
       floor.rotateX(-Math.PI / 2)
 
-      markerGroup.add(floor)
+      scene.add(floor)
 
       // Raycaster
       raycaster = new Raycaster()
       mouse = new Vector2()
       geometry = new SphereGeometry( 0.2, 12, 12)
       material = material.clone()
-      material.color = new Color( 0x000000 )
-      material.opacity = 1.0
+      material.color = new Color( 0xfffffff )
+      material.opacity = 0.5
       let dot = new Mesh(geometry, material)
       scene.add(dot)
 
       this.addRenderFunction( () =>{
 
-        camera.updateMatrixWorld()
-
         raycaster.setFromCamera( mouse, camera )
 
         let intersects = raycaster.intersectObject( floor )
-        floor.material.color.set( 0xff0000)
-        for ( var i = 0; i < intersects.length; i++ ) {
-          intersects[ i ].object.material.color.set( 0x0000ff)
-        }
-
         if(intersects.length){
           dot.position.copy(intersects[0].point)
         }
@@ -204,15 +264,14 @@ const Three = () => {
         /*
           seems to be effected by width of window when 
         */
-
         mouse.x = (( x  / canvas.offsetWidth ) * 2 - 1) * (params.shiftX * 0.01)
         mouse.y = (- ( y / canvas.offsetHeight ) * 2 + 1) * (params.shiftY * 0.01)
         //mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
         //mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
         
         // console.log(`mouseX: ${event.clientX} mouseY: ${event.clientY}`)
-        console.log(`x: ${mouse.x} y: ${mouse.y}`)
-        console.log(`width: ${canvas.offsetWidth} height: ${canvas.offsetHeight}`)
+        // console.log(`x: ${mouse.x} y: ${mouse.y}`)
+        // console.log(`width: ${canvas.offsetWidth} height: ${canvas.offsetHeight}`)
       }
     },
 
@@ -229,10 +288,6 @@ const Three = () => {
 
     getRenderer(){
       return renderer
-    },
-
-    getMarkerGroup(){
-      return markerGroup
     },
 
     toggleCameraControls(){
